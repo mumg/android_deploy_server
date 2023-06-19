@@ -1,0 +1,18 @@
+stages:
+  - build
+build:
+  stage: build
+  tags:
+    - docker
+    - dind
+  image: registry.trker.io/images/jdk-8:c24f9a07
+  script:
+    - gradle bootJar --refresh-dependencies
+    - export VERSION=${CI_COMMIT_SHA:0:8}
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:$VERSION .
+    - docker push $CI_REGISTRY_IMAGE:$VERSION
+    - docker rmi $CI_REGISTRY_IMAGE:$VERSION
+    - echo $CI_REGISTRY_IMAGE:$VERSION
+  only:
+    - master
